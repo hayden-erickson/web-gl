@@ -4,14 +4,23 @@
   "private": true,
   "dependencies": {
     "@types/jest": "24.0.17",
+    "@types/mathjs": "^6.0.2",
     "@types/node": "12.7.1",
     "@types/react": "16.9.1",
     "@types/react-dom": "16.8.5",
+    "@types/react-redux": "^7.1.2",
+    "canvas": "^2.6.0",
+    "mathjs": "^6.1.0",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
+    "react-redux": "^7.1.0",
     "react-scripts": "3.1.1",
+    "redux": "^4.0.4",
+    "redux-actions": "^2.6.5",
+    "twgl.js": "^4.11.2",
     "typescript": "3.5.3"
   },
+  "jest": {},
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -32,5 +41,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "enzyme": "^3.10.0",
+    "enzyme-adapter-react-16": "^1.14.0"
   }
 }

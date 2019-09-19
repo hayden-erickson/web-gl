@@ -1,6 +1,6 @@
 import React from 'react'
 import {ConfigPanel} from 'components/mutations/config-panel'
-import {Vec3} from 'store/mutations/types'
+import {Vec3} from 'store/projections/types'
 
 interface AllPanelProps {
     translation: Vec3;
@@ -12,7 +12,12 @@ interface AllPanelProps {
 }
 
 export const ConfigPanels: React.FC<AllPanelProps> = (props: AllPanelProps) => (
-    <div>
+    <div style={{
+            position: 'absolute',
+            color: 'white',
+            border: '1px solid white',
+            padding: '16px',
+        }}>
         <ConfigPanel 
             onChange={props.onTranslate} 
             coordinates={props.translation} 

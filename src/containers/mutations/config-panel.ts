@@ -1,11 +1,12 @@
 import {connect} from 'react-redux';
 import {ConfigPanels} from 'components/mutations/config-panels';
-import {MutationAction, Vec3} from 'store/mutations/types';
+import {MutationAction, Vec3} from 'store/projections/types';
 import {ReduxState} from 'store/reducer'
-import {translate, rotate, scale} from 'store/mutations/actions'
+import {translate, rotate, scale} from 'store/projections/actions'
 
 function mapStateToProps(state: ReduxState) {
-  return state.mutations;
+  var {rotation, translation, scale} = state.projections;
+  return {rotation, translation, scale};
 }
 
 function mapDispatchToProps(dispatch: (action: MutationAction) => void) {

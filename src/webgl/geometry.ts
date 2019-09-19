@@ -55,12 +55,12 @@ export function cubeGeo(
   
   var bottom = [...v[4], ...v[0], ...v[5], ...v[0], ...v[1], ...v[5]];
 
-  return front
-    .concat(back)
+  return back
+    .concat(front)
     .concat(left)
+    .concat(bottom)
     .concat(right)
-    .concat(top)
-    .concat(bottom);
+    .concat(top);
 }
 
 export function fGeo(

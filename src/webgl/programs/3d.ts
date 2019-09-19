@@ -9,11 +9,10 @@ import {
 
 import { Matrix, matrix, multiply, transpose } from 'mathjs';
 import { fColor, fGeo } from 'webgl/geometry';
+import { rotateMat } from 'linalg/matrix';
 
 export interface ProgramProps {
   u_matrix: Matrix;
-  width: number;
-  height: number;
 }
 
 function flatten(mat: Matrix): number[] {
@@ -24,17 +23,18 @@ function flatten(mat: Matrix): number[] {
 
 function ortho(w: number, h: number, d: number): Matrix {
   return matrix([
-    [2/w, 0, 0, -1],
-    [0, -2/h, 0, 1],
-    [0, 0, 2/d, 0],
+    [2/w, 0, 0, 0],
+    [0, -2/h, 0, 0],
+    [0, 0, -2/d, 0],
     [0, 0, 0, 1],
   ]);
 }
 
 
-export function createProgram(gl: WebGLRenderingContext) {
+export function createProgram(gl: WebGLRenderingContext, p: ProgramProps) {
+    var props = p;
     // Clear the canvas
-    gl.clearColor(0, 0, 0, 0);
+    gl.clearColor(0, 0, 0, 1);
 
     var vertexShaderSource = `
             attribute vec4 a_position;
@@ -63,9 +63,11 @@ export function createProgram(gl: WebGLRenderingContext) {
 
     const programInfo = createProgramInfo(gl, [vertexShaderSource, fragmentShaderSource]);
 
-    const positions = fGeo([0, 0, 0], [100, 150, 20])
+    // const positions = fGeo([0, 0, 0], [100, 150, 20])
+    const positions = fGeo([0, 0, 0], [100, 150, 40])
+    
     const colors = fColor({
-        front: [0, 0, 0, 1],
+        front: [1, 1, 1, 1],
         back: [0, 0, 1, 1],
         left: [0, 1, 0, 1],
         right: [0, 1, 1, 1],
@@ -78,18 +80,33 @@ export function createProgram(gl: WebGLRenderingContext) {
       'a_position': positions,
       'a_color': colors 
     })
-      
-  return function(props: ProgramProps) {
-      resizeCanvasToDisplaySize(gl.canvas);
-      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-      gl.enable(gl.CULL_FACE);
-      gl.enable(gl.DEPTH_TEST);
 
-      const projectionMat = ortho(gl.canvas.width, gl.canvas.height, 400)
-      const finalMat = flatten(matrix(transpose(multiply(projectionMat, props.u_matrix))));
+  const rotationRate = Math.PI/2;
+  var seconds, dTheta, rotationMat;
+  var rotation = 0;
+  var lastFrameTime = 0;
+      
+  const render = (time: DOMHighResTimeStamp) => {
+      seconds = (time-lastFrameTime)/1000;
+      dTheta = seconds * rotationRate;
+      rotation += dTheta;
+      rotation %= Math.PI*2;
+      rotationMat = rotateMat([0, rotation, 0])
+
+
+      resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
+      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+      gl.enable(gl.DEPTH_TEST);
+      gl.enable(gl.CULL_FACE);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+
+      const projectionMat = ortho(gl.canvas.width, gl.canvas.height, 1000)
+      const u_matrix = matrix(multiply(props.u_matrix, rotationMat))
+      const finalMat = flatten(matrix(transpose(multiply(projectionMat, u_matrix))));
 
       const uniforms = {
-        'u_color': [0, .8, 1, 1],
         'u_matrix': finalMat,
       };
 
@@ -97,5 +114,14 @@ export function createProgram(gl: WebGLRenderingContext) {
       setUniforms(programInfo, uniforms);
       setBuffersAndAttributes(gl, programInfo, bufferInfo);
       drawBufferInfo(gl, bufferInfo);
+
+      requestAnimationFrame(render)
+      lastFrameTime = time;
+  }
+
+  requestAnimationFrame(render)
+
+  return (p: ProgramProps) => {
+    props = p;
   }
 }

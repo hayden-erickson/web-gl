@@ -1,12 +1,12 @@
 import webgl from 'store/webgl/reducers'
 import {WebGLAction} from 'store/webgl/types'
-import mutations from 'store/mutations/reducers'
-import {MutationAction} from 'store/mutations/types'
+import projections from 'store/projections/reducers'
+import { MutationAction } from 'store/projections/types'
 import { combineReducers } from 'redux';
 
 const reducer = combineReducers({
     webgl,
-    mutations,
+    projections,
 })
 
 export type ReduxState = ReturnType<typeof reducer>

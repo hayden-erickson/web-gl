@@ -1,6 +1,6 @@
-import reducer from 'store/mutations/reducers';
-import {rotate, translate} from 'store/mutations/actions';
-import {MutationState, Vec3} from 'store/mutations/types';
+import reducer from 'store/projections/reducers';
+import {rotate, translate} from 'store/projections/actions';
+import {MutationState, Vec3} from 'store/projections/types';
 
 describe('mutationReducer', () => {
   var initialState: MutationState;

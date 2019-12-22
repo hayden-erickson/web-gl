@@ -4,7 +4,7 @@ import reducer from 'store/reducer';
 import {createStore, applyMiddleware, compose} from 'redux';
 import {Provider} from 'react-redux';
 import thunk from 'redux-thunk'
-import RadonScene from 'components/radon/scene';
+import RadonScene from 'containers/radon';
 // import ConfigPanel from 'containers/mutations/config-panel';
 // import ShaderCanvas from 'containers/canvas/shader-canvas'
 

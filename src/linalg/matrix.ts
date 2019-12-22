@@ -1,5 +1,5 @@
 import {Matrix, matrix, multiply} from 'mathjs';
-import {Vec3} from 'store/projections/types'
+import {Vec3} from 'store/types';
 
 export function multiplyAll(...mats: Matrix[]): Matrix {
   return mats.reduce((all, m) => matrix(multiply(all, m)));

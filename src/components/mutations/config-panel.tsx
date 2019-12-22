@@ -1,5 +1,5 @@
 import React from 'react';
-import {Vec3} from 'store/projections/types';
+import {Vec3} from 'store/types';
 
 export interface ConfigPanelProps {
   title: string;

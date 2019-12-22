@@ -2,7 +2,7 @@ import React, { Component, RefObject } from 'react'
 import { Matrix } from 'mathjs'
 
 import { createProgram, ProgramProps } from 'webgl/programs/3d'
-import { Vec3 } from 'store/projections/types';
+import { Vec3 } from 'store/types';
 
 interface ShaderCanvasProps {
     u_matrix: Matrix;

@@ -1,6 +1,4 @@
-export type Vec3 = [number, number, number];
-export type Mat3 = [Vec3, Vec3, Vec3]
-
+import {Vec3} from 'store/types';
 export interface MutationState {
   rotation: Vec3;
   translation: Vec3;

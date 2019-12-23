@@ -16,9 +16,10 @@ import {
     Group,
     PerspectiveCamera,
     DirectionalLight,
-    /* Raycaster, */
-    MeshBasicMaterial,
+    Raycaster,
     TextureLoader,
+    Texture,
+    MeshBasicMaterial,
     PlaneGeometry,
 } from 'three';
 
@@ -60,12 +61,13 @@ function Box(box: Matrix) {
     return new Mesh(geometry, meshColor(v(0, 0, 1)))
  }
 
-const Beams = (obj: Object3D, bbox: Matrix, N: number) => {
 
-    const y = getRow(bbox, 0)[1]
+function getBeamDataUrl(obj: Object3D, bbox: Matrix, N: number) {
+    const [x, y, z] = getRow(bbox, 0)
+    /* const y = getRow(bbox, 0)[1] */
     const [w, h] = getRow(bbox, 1)
 
-    // Create canvas
+    /* // Create canvas */
     let canvas = document.createElement('canvas');
     canvas.height = h;
     canvas.width = w;
@@ -75,36 +77,55 @@ const Beams = (obj: Object3D, bbox: Matrix, N: number) => {
     const imgData = context.createImageData(w, h);
 
     for( let i = 0; i < N; i++) {
-        /* const [a, b, c] = getRow(bbox, 2) */
-
         const by = Math.floor(y+(i*(h/N))+h/(2*N))
 
         const start = by*w*4
         const end = start + w*4
 
+        const srcPos = v(x, (h/2)-by, z)
+        const destPos =  v(x + w, (h/2)-by, z)
+
+        const ray = new Raycaster(srcPos, destPos.sub(srcPos).normalize())
+        const intersections = ray.intersectObject(obj)
+
+        let opacity = 255
+        let attStart = end
+        let dist = 0
+        let att = 0
+        switch( intersections.length ) {
+            case 2:
+                dist = intersections[1].distance - intersections[0].distance
+                att = 1 - (dist*dist)/(w*w) - .5
+                opacity = att*255
+                attStart = intersections[1].distance
+                break;
+            case 4:
+                dist = intersections[2].distance - intersections[1].distance
+                att = 1 - (dist*dist)/(w*w) - .5
+                opacity = att*255
+                attStart = intersections[2].distance
+                break;
+        }
+
         for (let j = start; j < end; j+=4) {
             imgData.data[j] = 255
             imgData.data[j+1] = 255
             imgData.data[j+2] = 255
-            imgData.data[j+3] = 255
+            imgData.data[j+3] = (j-start)/4 >= attStart ? opacity : 255
         }
 
-        /* const srcPos = v(x, by, z) */
-        /* const destPos =  v(x + w, by, z) */
-
-        /* const ray = new Raycaster(srcPos, destPos.sub(srcPos).normalize()) */
-        /* const intersections = ray.intersectObject(obj) */
     }
 
     // put data to context at (0, 0)
     context.putImageData(imgData, 0, 0);
 
-    // output image
-    const texture = new TextureLoader().load( canvas.toDataURL('image/png') );
+    return canvas.toDataURL()
+}
 
-    // immediately use the texture for material creation
-    const mat = new MeshBasicMaterial( { map: texture, transparent: true} );
+const Beams = (bbox: Matrix) => {
+    const [w, h] = getRow(bbox, 1)
     const geo = new PlaneGeometry(w, h)
+    const mat = new MeshBasicMaterial( {transparent: true, opacity: 0, map: null} );
     return new Mesh(geo, mat)
 }
 
@@ -129,13 +150,41 @@ const Beams = (obj: Object3D, bbox: Matrix, N: number) => {
 /*     } */
 /* } */
 
+
+
+function BeamBox(bbox: Matrix): Group {
+    const [x, y, z] = getRow(bbox, 0)
+    const [w, h, d] = getRow(bbox, 1)
+    const [a, b, c] = getRow(bbox, 2)
+
+    const g = new Group()
+    const barW = w/100
+    const leftBar = Box(matrix([[x, y, z], [barW, h, d], [0, 0, 0]]))
+    const rightBar = Box(matrix([[x + w, y, z], [barW, h, d], [0, 0, 0]]))
+    const beams = Beams(bbox)
+
+    leftBar.name = "leftBar"
+    rightBar.name = "rightBar"
+    beams.name = "beams"
+
+    g.add(beams  as Object3D)
+    g.add(leftBar)
+    g.add(rightBar)
+
+    g.rotateX(a)
+    g.rotateY(b)
+    g.rotateZ(c)
+
+    return g
+}
+
 class RadonScene {
     webGLRenderer: WebGLRenderer
     camera: Camera
     scene: Scene
     oc: OrbitControls
 
-    constructor(children: Object3D[]) {
+    constructor(children: Array<Object3D | Mesh>) {
         this.webGLRenderer = new WebGLRenderer()
         this.webGLRenderer.setSize( window.innerWidth, window.innerHeight )
         this.webGLRenderer.setPixelRatio( window.devicePixelRatio );
@@ -143,11 +192,9 @@ class RadonScene {
         this.scene = new Scene()
 
         this.camera = new PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 0.1, 1000 )
-        this.camera.position.x = 100
+        this.camera.position.x = 0
         this.camera.position.y = 0
-        this.camera.position.z = 0
-
-        console.log('adding orbit controls')
+        this.camera.position.z = 200 
 
         var light = new DirectionalLight(0xfdfdfd, 2);
         // you set the position of the light and it shines into the origin
@@ -156,10 +203,6 @@ class RadonScene {
         this.oc = new OrbitControls(this.camera)
 
         children.forEach(c => this.scene.add(c as Object3D));
-    }
-
-    onDrag(f: (e: any) => void) {
-        this.oc.addEventListener('drag', f)
     }
 
     render() {
@@ -178,40 +221,26 @@ interface RadonProps {
     decRays: () => void
 }
 
-function BeamBox(obj: Object3D, bbox: Matrix, N: number): Group {
-    const [x, y, z] = getRow(bbox, 0)
-    const [w, h, d] = getRow(bbox, 1)
-    const [a, b, c] = getRow(bbox, 2)
-
-    const g = new Group()
-    const barW = w/100
-    const leftBar = Box(matrix([[x, y, z], [barW, h, d], [0, 0, 0]]))
-    const rightBar = Box(matrix([[x + w, y, z], [barW, h, d], [0, 0, 0]]))
-    
-
-    const beams = Beams(obj, bbox, N)
-    if( beams !== undefined) g.add(beams)
-
-    g.add(leftBar)
-    g.add(rightBar)
-
-    g.rotateX(a)
-    g.rotateY(b)
-    g.rotateZ(c)
-
-    return g
-}
-
 export default class Radon extends Component<RadonProps> {
     rs: RadonScene
     b: Object3D
     bb: Group
+    tl: TextureLoader
+    beamData: string
 
     constructor(props: RadonProps) {
         super(props)
-        setInterval(() => this.props.rotateBeamBox(.01), 10)
+
+        const rotateBox = () => {
+            this.props.rotateBeamBox(.01)
+            requestAnimationFrame(rotateBox)
+        }
+        requestAnimationFrame(rotateBox)
+
+        this.beamData = ''
+        this.tl = new TextureLoader()
         this.b = Box(this.props.box)
-        this.bb = BeamBox(this.b, this.props.beamBox, this.props.numRays)
+        this.bb = BeamBox(this.props.beamBox)
         this.rs = new RadonScene([
             this.b,
             this.bb,
@@ -220,7 +249,18 @@ export default class Radon extends Component<RadonProps> {
 
     render() {
         /* this.bb.rotateZ(.01) */
-        this.b.rotateX(.01)
+        this.b.rotateZ(.01)
+        const beams = (this.bb.children[0] as Mesh)
+        const beamData = getBeamDataUrl(this.b, this.props.beamBox, this.props.numRays)
+
+        // only create new beam image if beams have been updated
+        if( beamData && beamData !== this.beamData ) {
+            this.tl.load(beamData, (t: Texture) => {
+                beams.material = new MeshBasicMaterial({map: t, transparent: true})
+            })
+            this.beamData = beamData
+        }
+
         return (
             <div>
                 <div id='controls' style={{position: 'absolute'}}>

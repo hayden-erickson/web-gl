@@ -9,7 +9,7 @@ import {
   DEC_RAYS,
 } from 'store/radon/actions';
 
-const initialBoxState = matrix([[0, 0, 0], [20, 40, 10], [0, 0, 0]]);
+const initialBoxState = matrix([[0, 0, 0], [32, 16, 8], [0, 0, 0]]);
 
 const box = (state: Matrix | undefined, action: boxAction) => {
   if (state === undefined) return initialBoxState;
@@ -32,11 +32,7 @@ const rays = (state: number | undefined, action: rayAction) => {
   }
 };
 
-const initialBeamBoxState = matrix([
-  [-100, 0, 0],
-  [200, 200, 4],
-  [0, Math.PI / 2, 0],
-]);
+const initialBeamBoxState = matrix([[-64, 0, 0], [128, 64, 4], [0, 0, 0]]);
 
 const beamBox = (state: Matrix | undefined, action: boxAction) => {
   if (state === undefined) return initialBeamBoxState;

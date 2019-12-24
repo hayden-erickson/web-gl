@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Matrix, index, matrix} from 'mathjs';
+import {Matrix, matrix, index} from 'mathjs';
 
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import {
@@ -13,7 +13,6 @@ import {
     WebGLRenderer,
     Camera,
     Scene,
-    Group,
     PerspectiveCamera,
     DirectionalLight,
     Raycaster,
@@ -21,13 +20,14 @@ import {
     Texture,
     MeshBasicMaterial,
     PlaneGeometry,
+    MeshBasicMaterialParameters,
 } from 'three';
 
 
 const v = (x: number, y: number, z: number) => new Vector3(x, y, z)
 
- function meshColor(color: Vector3) {
-     const co = () => new Color(color.x, color.y, color.z)
+ function meshColor(color: number) {
+     const co = () => new Color(color)
      return new MeshPhongMaterial({
          // light
          specular: co(),
@@ -46,7 +46,7 @@ function getRow(m: Matrix, row: number): number[] {
     return (m.subset(index(row, [0, 1, 2])).toArray() as number[][])[0]
 }
 
-function Box(box: Matrix) {
+function BoxMesh(box: Matrix, color?: number) {
     const [x, y, z] = getRow(box, 0)
     const [w, h, d] = getRow(box, 1)
     const [a, b, c] = getRow(box, 2)
@@ -58,7 +58,7 @@ function Box(box: Matrix) {
     geometry.rotateY(b)
     geometry.rotateZ(c)
 
-    return new Mesh(geometry, meshColor(v(0, 0, 1)))
+    return new Mesh(geometry, meshColor(color || 0xffffff))
  }
 
 
@@ -95,13 +95,13 @@ function getBeamDataUrl(obj: Object3D, bbox: Matrix, N: number) {
         switch( intersections.length ) {
             case 2:
                 dist = intersections[1].distance - intersections[0].distance
-                att = 1 - (dist*dist)/(w*w) - .5
+                att = 1 - dist/40
                 opacity = att*255
                 attStart = intersections[1].distance
                 break;
             case 4:
                 dist = intersections[2].distance - intersections[1].distance
-                att = 1 - (dist*dist)/(w*w) - .5
+                att = 1 - dist/40
                 opacity = att*255
                 attStart = intersections[2].distance
                 break;
@@ -111,7 +111,7 @@ function getBeamDataUrl(obj: Object3D, bbox: Matrix, N: number) {
             imgData.data[j] = 255
             imgData.data[j+1] = 255
             imgData.data[j+2] = 255
-            imgData.data[j+3] = (j-start)/4 >= attStart ? opacity : 255
+            imgData.data[j+3] = (j-start)/4 >= attStart-2 ? opacity : 255
         }
 
     }
@@ -122,67 +122,47 @@ function getBeamDataUrl(obj: Object3D, bbox: Matrix, N: number) {
     return canvas.toDataURL()
 }
 
-const Beams = (bbox: Matrix) => {
+const Beams = (bbox: Matrix, params?: MeshBasicMaterialParameters) => {
+    const [x, y, z] = getRow(bbox, 0)
     const [w, h] = getRow(bbox, 1)
     const geo = new PlaneGeometry(w, h)
-    const mat = new MeshBasicMaterial( {transparent: true, opacity: 0, map: null} );
+    geo.translate(x, y, z)
+
+    const mat = new MeshBasicMaterial( params || {transparent: true, opacity: 0, map: null} );
     return new Mesh(geo, mat)
 }
 
 
-/* function addXrayBeam(scene: Scene) { */
-/*     var srcPos =  v(-200, 0, 0) */
-/*     var destPos =  v(200, 0, 0) */
-/*     var dist = srcPos.distanceTo(destPos) */
-/*   */
-/*     var ray = new Raycaster(srcPos, destPos.sub(srcPos).normalize()) */
-/*   */
-/*     return (obj: Object3D) => { */
-/*         var intersections = ray.intersectObject(obj) */
-/*         if( intersections.length < 2 ) return; */
+/* function BeamBox(bbox: Matrix): Group { */
+/*     const [x, y, z] = getRow(bbox, 0) */
+/*     const [w, h, d] = getRow(bbox, 1) */
+/*     const [a, b, c] = getRow(bbox, 2) */
 /*  */
-/*         var first = intersections[0] */
-/*         var last = intersections[intersections.length-1] */
-/*         var throughObj = last.distance - first.distance  */
-/*         var ratio = 10*(throughObj*throughObj)/(dist*dist) */
-/*         setBeamOpacity(1 - ratio) */
-/*         return ratio */
-/*     } */
+/*     const g = new Group() */
+/*     const barW = w/100 */
+/*     const leftBar = BoxMesh(matrix([[x, y, z], [barW, h, d], [0, 0, 0]])) */
+/*     const rightBar = BoxMesh(matrix([[x + w, y, z], [barW, h, d], [0, 0, 0]])) */
+/*     const beams = Beams(bbox) */
+/*  */
+/*     leftBar.name = "leftBar" */
+/*     rightBar.name = "rightBar" */
+/*     beams.name = "beams" */
+/*  */
+/*     g.add(beams  as Object3D) */
+/*     g.add(leftBar) */
+/*     g.add(rightBar) */
+/*  */
+/*     g.rotateX(a) */
+/*     g.rotateY(b) */
+/*     g.rotateZ(c) */
+/*  */
+/*     return g */
 /* } */
-
-
-
-function BeamBox(bbox: Matrix): Group {
-    const [x, y, z] = getRow(bbox, 0)
-    const [w, h, d] = getRow(bbox, 1)
-    const [a, b, c] = getRow(bbox, 2)
-
-    const g = new Group()
-    const barW = w/100
-    const leftBar = Box(matrix([[x, y, z], [barW, h, d], [0, 0, 0]]))
-    const rightBar = Box(matrix([[x + w, y, z], [barW, h, d], [0, 0, 0]]))
-    const beams = Beams(bbox)
-
-    leftBar.name = "leftBar"
-    rightBar.name = "rightBar"
-    beams.name = "beams"
-
-    g.add(beams  as Object3D)
-    g.add(leftBar)
-    g.add(rightBar)
-
-    g.rotateX(a)
-    g.rotateY(b)
-    g.rotateZ(c)
-
-    return g
-}
 
 class RadonScene {
     webGLRenderer: WebGLRenderer
     camera: Camera
     scene: Scene
-    oc: OrbitControls
 
     constructor(children: Array<Object3D | Mesh>) {
         this.webGLRenderer = new WebGLRenderer()
@@ -194,13 +174,13 @@ class RadonScene {
         this.camera = new PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 0.1, 1000 )
         this.camera.position.x = 0
         this.camera.position.y = 0
-        this.camera.position.z = 200 
+        this.camera.position.z = 100
 
         var light = new DirectionalLight(0xfdfdfd, 2);
         // you set the position of the light and it shines into the origin
         light.position.set(2, 2, 1).normalize();
         this.scene.add(light);
-        this.oc = new OrbitControls(this.camera)
+        new OrbitControls(this.camera, this.webGLRenderer.domElement)
 
         children.forEach(c => this.scene.add(c as Object3D));
     }
@@ -217,14 +197,14 @@ interface RadonProps {
     numRays: number;
     rotateBox: (r: number) => void;
     rotateBeamBox: (r: number) => void;
-    incRays: () => void
-    decRays: () => void
+    setRayCount: (n: number) => void
 }
 
 export default class Radon extends Component<RadonProps> {
     rs: RadonScene
     b: Object3D
-    bb: Group
+    bb: Object3D
+    screen: Object3D
     tl: TextureLoader
     beamData: string
 
@@ -239,8 +219,13 @@ export default class Radon extends Component<RadonProps> {
 
         this.beamData = ''
         this.tl = new TextureLoader()
-        this.b = Box(this.props.box)
-        this.bb = BeamBox(this.props.beamBox)
+        this.b = BoxMesh(this.props.box, 0x0000ff)
+        this.bb = Beams(this.props.beamBox)
+
+        const [x, y, z] = getRow(this.props.beamBox, 0)
+        const [w, h, d] = getRow(this.props.beamBox, 1)
+
+        this.screen = Beams(matrix([[x+w, y, z],[w,h,d],[0,-Math.PI,0]]), {transparent: false, color: 0xffffff})
         this.rs = new RadonScene([
             this.b,
             this.bb,
@@ -250,8 +235,13 @@ export default class Radon extends Component<RadonProps> {
     render() {
         /* this.bb.rotateZ(.01) */
         this.b.rotateZ(.01)
-        const beams = (this.bb.children[0] as Mesh)
-        const beamData = getBeamDataUrl(this.b, this.props.beamBox, this.props.numRays)
+
+        const h = getRow(this.props.beamBox, 1)[1]
+        const maxRayCount = Math.ceil(Math.log2(h))
+        const rayCount = Math.pow(2, Math.floor(this.props.numRays))
+
+        const beams = (this.bb as Mesh)
+        const beamData = getBeamDataUrl(this.b, this.props.beamBox, rayCount)
 
         // only create new beam image if beams have been updated
         if( beamData && beamData !== this.beamData ) {
@@ -263,13 +253,9 @@ export default class Radon extends Component<RadonProps> {
 
         return (
             <div>
-                <div id='controls' style={{position: 'absolute'}}>
-                    <button onClick={this.props.incRays}>
-                        Add Beam
-                    </button>
-                    <button onClick={this.props.decRays}>
-                        Remove Beam
-                    </button>
+                <div id='controls' style={{position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px'}}>
+                    <h1 style={{color: 'white'}} >{rayCount} Beam{rayCount > 1 ? 's' : ''}</h1>
+                    <input type='range' min={0} max={maxRayCount} value={this.props.numRays} onChange={e => this.props.setRayCount(parseInt(e.target.value))} />
                 </div>
                 {this.rs.render()}
             </div>)

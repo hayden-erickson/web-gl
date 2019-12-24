@@ -5,8 +5,7 @@ import {
   rayAction,
   UPDATE_BOX,
   UPDATE_BEAM_BOX,
-  INC_RAYS,
-  DEC_RAYS,
+  SET_RAY_COUNT,
 } from 'store/radon/actions';
 
 const initialBoxState = matrix([[0, 0, 0], [32, 16, 8], [0, 0, 0]]);
@@ -19,17 +18,8 @@ const box = (state: Matrix | undefined, action: boxAction) => {
 };
 
 const rays = (state: number | undefined, action: rayAction) => {
-  if (state === undefined) return 1;
-
-  switch (action.type) {
-    case INC_RAYS:
-      return state + 1;
-    case DEC_RAYS:
-      const dec = state - 1;
-      return dec >= 0 ? dec : 0;
-    default:
-      return state;
-  }
+  if (state === undefined) return 7;
+  return action.type === SET_RAY_COUNT ? action.payload : state;
 };
 
 const initialBeamBoxState = matrix([[-64, 0, 0], [128, 64, 4], [0, 0, 0]]);

@@ -2,11 +2,11 @@ import {Matrix} from 'mathjs';
 
 export const UPDATE_BOX = 'UPDATE_BOX';
 export const UPDATE_BEAM_BOX = 'UPDATE_BEAM_BOX';
-export const INC_RAYS = 'INC_RAYS';
-export const DEC_RAYS = 'DEC_RAYS';
+export const SET_RAY_COUNT = 'SET_RAY_COUNT';
 
 export interface rayAction {
-  type: typeof INC_RAYS | typeof DEC_RAYS;
+  type: typeof SET_RAY_COUNT;
+  payload: number;
 }
 
 export interface boxAction {
@@ -26,10 +26,7 @@ const boxUpdate = (t: typeof UPDATE_BOX | typeof UPDATE_BEAM_BOX) => (
 export const updateBox = boxUpdate(UPDATE_BOX);
 export const updateBeamBox = boxUpdate(UPDATE_BEAM_BOX);
 
-export const incRays = (): rayAction => ({
-  type: INC_RAYS,
-});
-
-export const decRays = (): rayAction => ({
-  type: DEC_RAYS,
+export const setRayCount = (n: number): rayAction => ({
+  type: SET_RAY_COUNT,
+  payload: n,
 });

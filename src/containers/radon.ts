@@ -4,8 +4,7 @@ import {ReduxState} from 'store/reducer';
 import {
   updateBox,
   updateBeamBox,
-  incRays,
-  decRays,
+  setRayCount,
   RadonAction,
 } from 'store/radon/actions';
 import RadonScene from 'components/radon/scene';
@@ -22,8 +21,7 @@ const mapState = (state: ReduxState) => ({
 const mapDispatch = (dispatch: (action: RadonAction) => void) => ({
   rotateBox: (theta: number) => dispatch(updateBox(rotateX(theta))),
   rotateBeamBox: (theta: number) => dispatch(updateBeamBox(rotateX(theta))),
-  incRays: () => dispatch(incRays()),
-  decRays: () => dispatch(decRays()),
+  setRayCount: (n: number) => dispatch(setRayCount(n)),
 });
 
 export default connect(

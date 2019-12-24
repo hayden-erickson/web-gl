@@ -123,10 +123,10 @@ function getBeamDataUrl(obj: Object3D, bbox: Matrix, N: number) {
 }
 
 const Beams = (bbox: Matrix, params?: MeshBasicMaterialParameters) => {
-    const [x, y, z] = getRow(bbox, 0)
+    /* const [x, y, z] = getRow(bbox, 0) */
     const [w, h] = getRow(bbox, 1)
     const geo = new PlaneGeometry(w, h)
-    geo.translate(x, y, z)
+    /* geo.translate(x, y, z) */
 
     const mat = new MeshBasicMaterial( params || {transparent: true, opacity: 0, map: null} );
     return new Mesh(geo, mat)

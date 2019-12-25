@@ -6,6 +6,7 @@ import {
   updateBeamBox,
   setRayCount,
   RadonAction,
+  invertBeams,
 } from 'store/radon/actions';
 import RadonScene from 'components/radon/scene';
 
@@ -16,12 +17,14 @@ const mapState = (state: ReduxState) => ({
   box: state.radon.box,
   beamBox: state.radon.beamBox,
   numRays: state.radon.rays,
+  inverted: state.radon.inverted,
 });
 
 const mapDispatch = (dispatch: (action: RadonAction) => void) => ({
   rotateBox: (theta: number) => dispatch(updateBox(rotateX(theta))),
   rotateBeamBox: (theta: number) => dispatch(updateBeamBox(rotateX(theta))),
   setRayCount: (n: number) => dispatch(setRayCount(n)),
+  invertBeams: () => dispatch(invertBeams()),
 });
 
 export default connect(

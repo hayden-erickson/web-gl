@@ -3,6 +3,7 @@ import {Matrix} from 'mathjs';
 export const UPDATE_BOX = 'UPDATE_BOX';
 export const UPDATE_BEAM_BOX = 'UPDATE_BEAM_BOX';
 export const SET_RAY_COUNT = 'SET_RAY_COUNT';
+export const INVERT_BEAMS = 'INVERT_BEAMS';
 
 export interface rayAction {
   type: typeof SET_RAY_COUNT;
@@ -14,7 +15,11 @@ export interface boxAction {
   payload: Matrix;
 }
 
-export type RadonAction = boxAction | rayAction;
+export interface invertBeamsAction {
+  type: typeof INVERT_BEAMS;
+}
+
+export type RadonAction = boxAction | rayAction | invertBeamsAction;
 
 const boxUpdate = (t: typeof UPDATE_BOX | typeof UPDATE_BEAM_BOX) => (
   x: Matrix,
@@ -30,3 +35,5 @@ export const setRayCount = (n: number): rayAction => ({
   type: SET_RAY_COUNT,
   payload: n,
 });
+
+export const invertBeams = (): invertBeamsAction => ({type: INVERT_BEAMS});

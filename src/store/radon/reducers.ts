@@ -3,9 +3,11 @@ import {combineReducers} from 'redux';
 import {
   boxAction,
   rayAction,
+  invertBeamsAction,
   UPDATE_BOX,
   UPDATE_BEAM_BOX,
   SET_RAY_COUNT,
+  INVERT_BEAMS,
 } from 'store/radon/actions';
 
 const initialBoxState = matrix([[0, 0, 0], [32, 16, 8], [0, 0, 0]]);
@@ -31,10 +33,15 @@ const beamBox = (state: Matrix | undefined, action: boxAction) => {
     : state;
 };
 
+const inverted = (state: boolean | undefined, action: invertBeamsAction) => {
+  return action.type === INVERT_BEAMS ? !state : !!state;
+};
+
 const radon = combineReducers({
   beamBox,
   box,
   rays,
+  inverted,
 });
 
 export default radon;

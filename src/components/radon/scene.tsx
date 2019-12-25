@@ -62,7 +62,7 @@ function BoxMesh(box: Matrix, color?: number) {
  }
 
 
-function getBeamDataUrl(obj: Object3D, bbox: Matrix, N: number) {
+function getBeamDataUrl(obj: Object3D, bbox: Matrix, N: number, inv: boolean) {
     const [x, y, z] = getRow(bbox, 0)
     /* const y = getRow(bbox, 0)[1] */
     const [w, h] = getRow(bbox, 1)
@@ -95,23 +95,25 @@ function getBeamDataUrl(obj: Object3D, bbox: Matrix, N: number) {
         switch( intersections.length ) {
             case 2:
                 dist = intersections[1].distance - intersections[0].distance
-                att = 1 - dist/40
-                opacity = att*255
+                att = dist/40
+                opacity = inv ? att*255 : (1-att)*255
                 attStart = intersections[1].distance
                 break;
             case 4:
                 dist = intersections[2].distance - intersections[1].distance
-                att = 1 - dist/40
-                opacity = att*255
+                att = dist/40
+                opacity = inv ? att*255 : (1-att)*255
                 attStart = intersections[2].distance
                 break;
         }
+
+        const defVal = inv ? 0 : 255
 
         for (let j = start; j < end; j+=4) {
             imgData.data[j] = 255
             imgData.data[j+1] = 255
             imgData.data[j+2] = 255
-            imgData.data[j+3] = (j-start)/4 >= attStart-2 ? opacity : 255
+            imgData.data[j+3] = (j-start)/4 >= attStart-2 ? opacity : defVal
         }
 
     }
@@ -131,33 +133,6 @@ const Beams = (bbox: Matrix, params?: MeshBasicMaterialParameters) => {
     const mat = new MeshBasicMaterial( params || {transparent: true, opacity: 0, map: null} );
     return new Mesh(geo, mat)
 }
-
-
-/* function BeamBox(bbox: Matrix): Group { */
-/*     const [x, y, z] = getRow(bbox, 0) */
-/*     const [w, h, d] = getRow(bbox, 1) */
-/*     const [a, b, c] = getRow(bbox, 2) */
-/*  */
-/*     const g = new Group() */
-/*     const barW = w/100 */
-/*     const leftBar = BoxMesh(matrix([[x, y, z], [barW, h, d], [0, 0, 0]])) */
-/*     const rightBar = BoxMesh(matrix([[x + w, y, z], [barW, h, d], [0, 0, 0]])) */
-/*     const beams = Beams(bbox) */
-/*  */
-/*     leftBar.name = "leftBar" */
-/*     rightBar.name = "rightBar" */
-/*     beams.name = "beams" */
-/*  */
-/*     g.add(beams  as Object3D) */
-/*     g.add(leftBar) */
-/*     g.add(rightBar) */
-/*  */
-/*     g.rotateX(a) */
-/*     g.rotateY(b) */
-/*     g.rotateZ(c) */
-/*  */
-/*     return g */
-/* } */
 
 class RadonScene {
     webGLRenderer: WebGLRenderer
@@ -195,10 +170,29 @@ interface RadonProps {
     box: Matrix;
     beamBox: Matrix;
     numRays: number;
+    inverted: boolean;
     rotateBox: (r: number) => void;
     rotateBeamBox: (r: number) => void;
-    setRayCount: (n: number) => void
+    setRayCount: (n: number) => void;
+    invertBeams: () => void;
 }
+
+interface InvButtonProps {
+    inverted: boolean;
+    invert: () => void
+}
+
+const InvButton: React.FC<InvButtonProps> = (props: InvButtonProps) => (
+    <div style={{padding: '16px'}}>
+        <button style={{
+            color: props.inverted ? 'white' : 'black',
+            backgroundColor: props.inverted ? 'black' : 'white',
+            fontSize: '16px',
+        }}
+            onClick={props.invert}>
+            Invert
+        </button>
+    </div>)
 
 export default class Radon extends Component<RadonProps> {
     rs: RadonScene
@@ -241,7 +235,7 @@ export default class Radon extends Component<RadonProps> {
         const rayCount = Math.pow(2, Math.floor(this.props.numRays))
 
         const beams = (this.bb as Mesh)
-        const beamData = getBeamDataUrl(this.b, this.props.beamBox, rayCount)
+        const beamData = getBeamDataUrl(this.b, this.props.beamBox, rayCount, this.props.inverted)
 
         // only create new beam image if beams have been updated
         if( beamData && beamData !== this.beamData ) {
@@ -256,6 +250,7 @@ export default class Radon extends Component<RadonProps> {
                 <div id='controls' style={{position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px'}}>
                     <h1 style={{color: 'white'}} >{rayCount} Beam{rayCount > 1 ? 's' : ''}</h1>
                     <input type='range' min={0} max={maxRayCount} value={this.props.numRays} onChange={e => this.props.setRayCount(parseInt(e.target.value))} />
+                    <InvButton invert={this.props.invertBeams} inverted={this.props.inverted} />
                 </div>
                 {this.rs.render()}
             </div>)

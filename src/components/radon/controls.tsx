@@ -9,9 +9,11 @@ const InvButton: React.FC<InvButtonProps> = (props: InvButtonProps) => (
   <div style={{padding: '16px'}}>
     <button
       style={{
+        cursor: 'pointer',
         color: props.inverted ? 'white' : 'black',
         backgroundColor: props.inverted ? 'black' : 'white',
-        fontSize: '16px',
+        fontSize: '32px',
+        padding: '8px',
         borderRadius: '8px',
       }}
       onClick={props.invert}>
@@ -50,17 +52,23 @@ interface RecordProps {
 }
 
 const Record: React.FC<RecordProps> = (props: RecordProps) => (
-  <div style={{color: 'white'}}>
+  <div
+    style={{
+      color: 'white',
+      cursor: 'pointer',
+      padding: '8px',
+      fontSize: '32px',
+    }}
+    onClick={props.toggleRecording}>
     <span style={{padding: '4px'}}>{props.recording ? 'Stop' : 'Record'}</span>
     <button
       style={{
-        fontSize: '16px',
-        borderRadius: props.recording ? '0px' : '8px',
-        height: '16px',
-        width: '16px',
+        cursor: 'pointer',
+        borderRadius: props.recording ? '0px' : '12px',
+        height: '24px',
+        width: '24px',
         backgroundColor: props.recording ? 'rgba(0, 0, 0, 0)' : 'red',
       }}
-      onClick={props.toggleRecording}
     />
   </div>
 );

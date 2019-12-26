@@ -83,11 +83,13 @@ export default class Radon extends Component<RadonProps> {
     screen: Object3D
     tl: TextureLoader
     beamData: string
+    recording: boolean
 
     constructor(props: RadonProps) {
         super(props)
 
         this.beamData = ''
+        this.recording = false
         this.tl = new TextureLoader()
         this.b = BoxMesh(this.props.box, 0x0000ff)
         this.bb = Beams(this.props.beamBox)
@@ -134,8 +136,12 @@ export default class Radon extends Component<RadonProps> {
                 this.tl.load(screenData, (t: Texture) => {
                     screen.material = new MeshBasicMaterial({map: t, transparent: true})
                 })
-            } else {
+                this.recording = true
+            } else if( this.recording && !this.props.recording ) {
+                // only hide the recording screen when state changes, not every
+                // loop where recording is off
                 screen.material = new MeshBasicMaterial({transparent: true, opacity: 0})
+                this.recording = false
             }
 
             requestAnimationFrame(rotateBox)

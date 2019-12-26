@@ -7,24 +7,30 @@ import {
   setRayCount,
   RadonAction,
   invertBeams,
+  saveOpacity,
+  toggleRecording,
 } from 'store/radon/actions';
 import RadonScene from 'components/radon/scene';
 
-const rotateX = (theta: number) =>
-  matrix([[0, 0, 0], [0, 0, 0], [theta, 0, 0]]);
+const rotateZ = (theta: number) =>
+  matrix([[0, 0, 0], [0, 0, 0], [0, 0, theta]]);
 
 const mapState = (state: ReduxState) => ({
   box: state.radon.box,
   beamBox: state.radon.beamBox,
   numRays: state.radon.rays,
   inverted: state.radon.inverted,
+  recording: state.radon.recording,
+  opacities: state.radon.opacities,
 });
 
 const mapDispatch = (dispatch: (action: RadonAction) => void) => ({
-  rotateBox: (theta: number) => dispatch(updateBox(rotateX(theta))),
-  rotateBeamBox: (theta: number) => dispatch(updateBeamBox(rotateX(theta))),
+  rotateBox: (theta: number) => dispatch(updateBox(rotateZ(theta))),
+  rotateBeamBox: (theta: number) => dispatch(updateBeamBox(rotateZ(theta))),
   setRayCount: (n: number) => dispatch(setRayCount(n)),
   invertBeams: () => dispatch(invertBeams()),
+  saveOpacity: (o: number[]) => dispatch(saveOpacity(o)),
+  toggleRecording: () => dispatch(toggleRecording()),
 });
 
 export default connect(

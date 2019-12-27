@@ -42,9 +42,9 @@ class RadonScene {
         this.scene = new Scene()
 
         this.camera = new PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 0.1, 1000 )
-        this.camera.position.x = -40
+        this.camera.position.x = 0
         this.camera.position.y = 20
-        this.camera.position.z = 80
+        this.camera.position.z = 100
 
         var light = new DirectionalLight(0xfdfdfd, 2);
         // you set the position of the light and it shines into the origin

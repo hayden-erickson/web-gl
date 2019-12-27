@@ -13,7 +13,7 @@ const InvButton: React.FC<InvButtonProps> = (props: InvButtonProps) => (
         color: props.inverted ? 'white' : 'black',
         backgroundColor: props.inverted ? 'black' : 'white',
         fontSize: '32px',
-        padding: '8px',
+        padding: '0px 8px',
         borderRadius: '8px',
       }}
       onClick={props.invert}>

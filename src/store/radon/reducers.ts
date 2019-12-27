@@ -51,7 +51,7 @@ const recording = (
   state: boolean | undefined,
   action: toggleRecordingAction,
 ) => {
-  if (state === undefined) return true;
+  if (state === undefined) return false;
 
   return action.type === TOGGLE_RECORDING ? !state : state;
 };

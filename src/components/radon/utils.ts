@@ -69,6 +69,8 @@ export function getScreenDataUrl(bbox: Matrix, opacities: number[][]): string {
   if (context === null) return '';
   const imgData = context.createImageData(w, h);
 
+  const fLimit = opacities.length / 4;
+
   // the number of stored opacities should equal the width of the bounding box
   for (let col = 0; col < opacities.length; col++) {
     let N = opacities[col] ? opacities[col].length : 0;
@@ -76,11 +78,16 @@ export function getScreenDataUrl(bbox: Matrix, opacities: number[][]): string {
       const row = Math.floor(i * (h / N) + h / (2 * N));
       // row * w * 4 + col * 4
       // 4 * (row * w + col)
+
+      const faded = col >= opacities.length - fLimit;
+      const x = opacities.length - col;
+      const op = opacities[col][i];
+
       let pxl = 4 * (row * w + col);
       imgData.data[pxl] = 255;
       imgData.data[pxl + 1] = 255;
       imgData.data[pxl + 2] = 255;
-      imgData.data[pxl + 3] = opacities[col][i];
+      imgData.data[pxl + 3] = faded ? op - (fLimit - x) * (op / fLimit) : op;
     }
   }
 

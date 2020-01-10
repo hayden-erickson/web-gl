@@ -13,7 +13,11 @@ import {
 import RadonScene from 'components/radon/scene';
 
 const rotateZ = (theta: number) =>
-  matrix([[0, 0, 0], [0, 0, 0], [0, 0, theta]]);
+  matrix([
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, theta],
+  ]);
 
 const mapState = (state: ReduxState) => ({
   box: state.radon.box,
@@ -22,6 +26,9 @@ const mapState = (state: ReduxState) => ({
   inverted: state.radon.inverted,
   recording: state.radon.recording,
   opacities: state.radon.opacities,
+  theta: state.radon.maxTheta / state.radon.opacities.length,
+  numAngles: state.radon.opacities.length,
+  cyclesPerSec: state.radon.cyclesPerSec,
 });
 
 const mapDispatch = (dispatch: (action: RadonAction) => void) => ({
@@ -33,7 +40,4 @@ const mapDispatch = (dispatch: (action: RadonAction) => void) => ({
   toggleRecording: () => dispatch(toggleRecording()),
 });
 
-export default connect(
-  mapState,
-  mapDispatch,
-)(RadonScene);
+export default connect(mapState, mapDispatch)(RadonScene);

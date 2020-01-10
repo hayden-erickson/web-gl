@@ -78,15 +78,7 @@ type RadonControlsProps = InvButtonProps & RayCountSliderProps & RecordProps;
 export const RadonControls: React.FC<RadonControlsProps> = (
   props: RadonControlsProps,
 ) => (
-  <div
-    id="controls"
-    style={{
-      position: 'absolute',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      padding: '16px',
-    }}>
+  <div id="controls">
     <RayCountSlider {...props} />
     <InvButton {...props} />
     <Record {...props} />

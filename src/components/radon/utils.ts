@@ -55,10 +55,14 @@ interface beamDataOpts {
   saveOpacity: (o: number[]) => void;
 }
 
-export function getScreenDataUrl(bbox: Matrix, opacities: number[][]): string {
+export function getScreenDataUrl(
+  bbox: Matrix,
+  opacities: number[][],
+  numAngles?: number,
+): string {
   let [w, h] = getRow(bbox, 1);
   // here we use * 4 b/c that's how many rotation values we want to capture
-  w = w * 4;
+  w = numAngles ? numAngles : w * 4;
 
   /* // Create canvas */
   let canvas = document.createElement('canvas');
@@ -69,7 +73,7 @@ export function getScreenDataUrl(bbox: Matrix, opacities: number[][]): string {
   if (context === null) return '';
   const imgData = context.createImageData(w, h);
 
-  const fLimit = opacities.length / 4;
+  const fLimit = opacities.length / 2;
 
   // the number of stored opacities should equal the width of the bounding box
   for (let col = 0; col < opacities.length; col++) {
@@ -136,13 +140,13 @@ export function getBeamDataUrl(
     switch (intersections.length) {
       case 2:
         dist = intersections[1].distance - intersections[0].distance;
-        att = dist / 40;
+        att = dist / 64;
         opacity = opts.inv ? att * 255 : (1 - att) * 255;
         attStart = intersections[1].distance;
         break;
       case 4:
         dist = intersections[2].distance - intersections[1].distance;
-        att = dist / 40;
+        att = dist / 64;
         opacity = opts.inv ? att * 255 : (1 - att) * 255;
         attStart = intersections[2].distance;
         break;

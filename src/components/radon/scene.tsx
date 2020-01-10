@@ -19,6 +19,8 @@ import {
     RadonControls
 } from 'components/radon/controls'
 
+import Inverse from 'containers/inverse'
+
 import {
     BoxMesh,
     Beams,
@@ -69,11 +71,14 @@ interface RadonProps {
     inverted: boolean;
     recording: boolean;
     opacities: number[][];
+    numAngles: number;
+    cyclesPerSec: number;
     rotateBox: (n: number) => void;
     setRayCount: (n: number) => void;
     invertBeams: () => void;
     saveOpacity: (o: number[]) => void;
     toggleRecording: () => void;
+    theta: number;
 }
 
 export default class Radon extends Component<RadonProps> {
@@ -84,6 +89,7 @@ export default class Radon extends Component<RadonProps> {
     tl: TextureLoader
     beamData: string
     recording: boolean
+    
 
     constructor(props: RadonProps) {
         super(props)
@@ -104,12 +110,15 @@ export default class Radon extends Component<RadonProps> {
             this.screen,
         ])
 
-        // here we use * 4 b/c that's how many rotation values we want to capture
-        const theta = Math.PI/(w*4)
+        let prevTime = 0
+        const waitTime = (1/this.props.numAngles) / this.props.cyclesPerSec
 
-        const rotateBox = () => {
-            this.b.rotateZ(theta)
-            this.props.rotateBox(theta)
+        const rotateBox = (ms: number) => {
+            if( ((ms - prevTime) / 1000) < waitTime ) return requestAnimationFrame(rotateBox);
+            prevTime = ms
+
+            this.b.rotateZ(this.props.theta)
+            this.props.rotateBox(this.props.theta)
 
             const rayCount = Math.pow(2, Math.floor(this.props.numRays))
 
@@ -131,7 +140,7 @@ export default class Radon extends Component<RadonProps> {
             const screen = this.screen as Mesh
 
             if( this.props.recording ) {
-                const screenData = getScreenDataUrl(this.props.beamBox, this.props.opacities)
+                const screenData = getScreenDataUrl(this.props.beamBox, this.props.opacities, this.props.numAngles)
 
                 this.tl.load(screenData, (t: Texture) => {
                     screen.material = new MeshBasicMaterial({map: t, transparent: true})
@@ -158,6 +167,13 @@ export default class Radon extends Component<RadonProps> {
 
         return (
             <div>
+            <div style={{
+                  position: 'absolute',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  padding: '16px',
+                }}>
                 <RadonControls
                     inverted={this.props.inverted}
                     invert={this.props.invertBeams}
@@ -168,6 +184,8 @@ export default class Radon extends Component<RadonProps> {
                     recording={this.props.recording}
                     toggleRecording={this.props.toggleRecording}
                     />
+                <Inverse />
+            </div>
                 {this.rs.render()}
             </div>)
     }

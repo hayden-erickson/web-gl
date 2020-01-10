@@ -14,7 +14,11 @@ import {
   SAVE_OPACITY,
 } from 'store/radon/actions';
 
-const initialBoxState = matrix([[0, 0, 0], [32, 16, 8], [0, 0, 0]]);
+const initialBoxState = matrix([
+  [0, 0, 0],
+  [64, 32, 8],
+  [0, 0, 0],
+]);
 
 const box = (state: Matrix | undefined, action: boxAction) => {
   if (state === undefined) return initialBoxState;
@@ -28,8 +32,8 @@ const rays = (state: number | undefined, action: rayAction) => {
   return action.type === SET_RAY_COUNT ? action.payload : state;
 };
 
-const BB_WIDTH = 64;
-const BB_HEIGHT = 64;
+const BB_WIDTH = 128;
+const BB_HEIGHT = 128;
 const initialBeamBoxState = matrix([
   [0, 0, 0],
   [BB_WIDTH, BB_HEIGHT, 4],
@@ -61,7 +65,7 @@ const opacities = (
   action: saveOpacityAction,
 ) => {
   // here we use * 4 b/c that's how many rotation values we want to capture
-  if (state === undefined) return Array(BB_WIDTH * 4);
+  if (state === undefined) return Array(BB_WIDTH);
 
   if (action.type === SAVE_OPACITY) {
     let out = Array.of(...state);
@@ -80,6 +84,8 @@ const radon = combineReducers({
   inverted,
   recording,
   opacities,
+  maxTheta: () => Math.PI,
+  cyclesPerSec: () => 1 / 2,
 });
 
 export default radon;

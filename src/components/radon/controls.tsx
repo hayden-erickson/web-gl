@@ -26,6 +26,7 @@ interface RayCountSliderProps {
   rayCount: number;
   maxRayCount: number;
   numRays: number;
+  reconstructing: boolean;
   setRayCount: (n: number) => void;
 }
 
@@ -55,32 +56,52 @@ const Record: React.FC<RecordProps> = (props: RecordProps) => (
   <div
     style={{
       color: 'white',
-      cursor: 'pointer',
+      cursor: props.recording ? 'not-allowed' : 'pointer',
       padding: '8px',
       fontSize: '32px',
     }}
-    onClick={props.toggleRecording}>
-    <span style={{padding: '4px'}}>{props.recording ? 'Stop' : 'Record'}</span>
+    onClick={props.recording ? () => {} : props.toggleRecording}>
+    <span style={{padding: '4px', color: props.recording ? 'gray' : 'white'}}>
+      Record
+    </span>
     <button
       style={{
-        cursor: 'pointer',
-        borderRadius: props.recording ? '0px' : '12px',
+        cursor: props.recording ? 'not-allowed' : 'pointer',
+        borderRadius: '12px',
         height: '24px',
         width: '24px',
-        backgroundColor: props.recording ? 'rgba(0, 0, 0, 0)' : 'red',
+        backgroundColor: props.recording ? 'gray' : 'red',
       }}
     />
   </div>
 );
 
+interface ReconstructProps {
+  reconstructing: boolean;
+}
+
+const Reconstruct: React.FC<ReconstructProps> = (props: ReconstructProps) => (
+  <div
+    style={{
+      color: 'white',
+      padding: '8px',
+      fontSize: '32px',
+    }}>
+    <span style={{color: 'white'}}>Reconstruct</span>
+  </div>
+);
+
 type RadonControlsProps = InvButtonProps & RayCountSliderProps & RecordProps;
 
-export const RadonControls: React.FC<RadonControlsProps> = (
+const RadonControls: React.FC<RadonControlsProps> = (
   props: RadonControlsProps,
 ) => (
   <div id="controls">
     <RayCountSlider {...props} />
     <InvButton {...props} />
     <Record {...props} />
+    <Reconstruct {...props} />
   </div>
 );
+
+export default RadonControls;

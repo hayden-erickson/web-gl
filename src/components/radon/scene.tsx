@@ -15,9 +15,7 @@ import {
     MeshBasicMaterial,
 } from 'three';
 
-import {
-    RadonControls
-} from 'components/radon/controls'
+import RadonControls from 'containers/controls'
 
 import Inverse from 'containers/inverse'
 
@@ -72,10 +70,7 @@ interface RadonProps {
     recording: boolean;
     opacities: number[][];
     numAngles: number;
-    cyclesPerSec: number;
     rotateBox: (n: number) => void;
-    setRayCount: (n: number) => void;
-    invertBeams: () => void;
     saveOpacity: (o: number[]) => void;
     toggleRecording: () => void;
     theta: number;
@@ -88,34 +83,30 @@ export default class Radon extends Component<RadonProps> {
     screen: Object3D
     tl: TextureLoader
     beamData: string
-    recording: boolean
-    
+    // nr = number of angles recorded
+    nr: number
 
     constructor(props: RadonProps) {
         super(props)
 
         this.beamData = ''
-        this.recording = false
         this.tl = new TextureLoader()
         this.b = BoxMesh(this.props.box, 0x0000ff)
         this.bb = Beams(this.props.beamBox)
+        this.nr = 0
 
         const [x, y, z] = getRow(this.props.beamBox, 0)
         const [w, h, d] = getRow(this.props.beamBox, 1)
 
-        this.screen = Beams(matrix([[x+w/2, y, z+w/2],[w,h,d],[0,-Math.PI/2,0]]))
+        const N = props.opacities.length
+        this.screen = Beams(matrix([[x+w/2, y, z+N/2],[N,h,d],[0,-Math.PI/2,0]]))
         this.rs = new RadonScene([
             this.b,
             this.bb,
             this.screen,
         ])
 
-        let prevTime = 0
-        const waitTime = (1/this.props.numAngles) / this.props.cyclesPerSec
-
         const rotateBox = (ms: number) => {
-            if( ((ms - prevTime) / 1000) < waitTime ) return requestAnimationFrame(rotateBox);
-            prevTime = ms
 
             this.b.rotateZ(this.props.theta)
             this.props.rotateBox(this.props.theta)
@@ -139,19 +130,21 @@ export default class Radon extends Component<RadonProps> {
 
             const screen = this.screen as Mesh
 
+            const doneRecording = this.nr === this.props.opacities.length
+            if (this.props.recording && doneRecording) {
+                this.nr = 0
+                this.props.toggleRecording()
+            }
+
+
             if( this.props.recording ) {
+                this.nr += 1
                 const screenData = getScreenDataUrl(this.props.beamBox, this.props.opacities, this.props.numAngles)
 
                 this.tl.load(screenData, (t: Texture) => {
                     screen.material = new MeshBasicMaterial({map: t, transparent: true})
                 })
-                this.recording = true
-            } else if( this.recording && !this.props.recording ) {
-                // only hide the recording screen when state changes, not every
-                // loop where recording is off
-                screen.material = new MeshBasicMaterial({transparent: true, opacity: 0})
-                this.recording = false
-            }
+            } 
 
             requestAnimationFrame(rotateBox)
         }
@@ -161,9 +154,6 @@ export default class Radon extends Component<RadonProps> {
 
     render() {
         /* this.bb.rotateZ(.01) */
-        const h = getRow(this.props.beamBox, 1)[1]
-        const maxRayCount = Math.ceil(Math.log2(h))
-        const rayCount = Math.pow(2, Math.floor(this.props.numRays))
 
         return (
             <div>
@@ -174,16 +164,7 @@ export default class Radon extends Component<RadonProps> {
                   alignItems: 'center',
                   padding: '16px',
                 }}>
-                <RadonControls
-                    inverted={this.props.inverted}
-                    invert={this.props.invertBeams}
-                    rayCount={rayCount}
-                    maxRayCount={maxRayCount}
-                    numRays={this.props.numRays}
-                    setRayCount={this.props.setRayCount}
-                    recording={this.props.recording}
-                    toggleRecording={this.props.toggleRecording}
-                    />
+                <RadonControls />
                 <Inverse />
             </div>
                 {this.rs.render()}

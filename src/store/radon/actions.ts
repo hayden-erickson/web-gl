@@ -7,6 +7,7 @@ export const UPDATE_BEAM_BOX = 'UPDATE_BEAM_BOX';
 export const SET_RAY_COUNT = 'SET_RAY_COUNT';
 export const INVERT_BEAMS = 'INVERT_BEAMS';
 export const TOGGLE_RECORDING = 'TOGGLE_RECORDING';
+export const TOGGLE_RECONSTRUCTING = 'TOGGLE_RECONSTRUCTING';
 export const SAVE_OPACITY = 'SAVE_OPACITY';
 
 // action shapes
@@ -27,6 +28,10 @@ export interface invertBeamsAction {
 
 export interface toggleRecordingAction {
   type: typeof TOGGLE_RECORDING;
+}
+
+export interface toggleReconstructingAction {
+  type: typeof TOGGLE_RECONSTRUCTING;
 }
 
 export interface saveOpacityAction {

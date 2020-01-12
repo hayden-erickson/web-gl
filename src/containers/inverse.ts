@@ -7,7 +7,7 @@ const mapState = (state: ReduxState) => ({
   bbox: state.radon.beamBox,
   opacities: state.radon.opacities,
   maxTheta: state.radon.maxTheta,
-  recording: state.radon.recording,
+  reconstructing: state.radon.reconstructing,
 });
 const mapDispatch = () => ({});
 

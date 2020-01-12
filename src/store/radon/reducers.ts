@@ -5,18 +5,20 @@ import {
   rayAction,
   invertBeamsAction,
   toggleRecordingAction,
+  toggleReconstructingAction,
   saveOpacityAction,
   UPDATE_BOX,
   UPDATE_BEAM_BOX,
   SET_RAY_COUNT,
   INVERT_BEAMS,
   TOGGLE_RECORDING,
+  TOGGLE_RECONSTRUCTING,
   SAVE_OPACITY,
 } from 'store/radon/actions';
 
 const initialBoxState = matrix([
   [0, 0, 0],
-  [64, 32, 8],
+  [32, 64, 8],
   [0, 0, 0],
 ]);
 
@@ -32,6 +34,8 @@ const rays = (state: number | undefined, action: rayAction) => {
   return action.type === SET_RAY_COUNT ? action.payload : state;
 };
 
+// N the number of angles to measure
+const N = 128;
 const BB_WIDTH = 128;
 const BB_HEIGHT = 128;
 const initialBeamBoxState = matrix([
@@ -60,12 +64,22 @@ const recording = (
   return action.type === TOGGLE_RECORDING ? !state : state;
 };
 
+const reconstructing = (
+  state: boolean | undefined,
+  action: toggleReconstructingAction,
+) => {
+  if (state === undefined) return false;
+
+  return action.type === TOGGLE_RECONSTRUCTING ? !state : state;
+};
+
 const opacities = (
   state: number[][] | undefined,
-  action: saveOpacityAction,
+  action: saveOpacityAction | toggleRecordingAction,
 ) => {
   // here we use * 4 b/c that's how many rotation values we want to capture
-  if (state === undefined) return Array(BB_WIDTH);
+  // if we're starting a new recording, clear any past recordings
+  if (state === undefined || action.type === TOGGLE_RECORDING) return Array(N);
 
   if (action.type === SAVE_OPACITY) {
     let out = Array.of(...state);
@@ -83,9 +97,10 @@ const radon = combineReducers({
   rays,
   inverted,
   recording,
+  reconstructing,
   opacities,
   maxTheta: () => Math.PI,
-  cyclesPerSec: () => 1 / 2,
+  cyclesPerSec: () => 1 / 20,
 });
 
 export default radon;

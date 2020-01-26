@@ -1,4 +1,4 @@
-import {add, Matrix, matrix} from 'mathjs';
+import {add, Matrix, matrix, index} from 'mathjs';
 import {combineReducers} from 'redux';
 import {
   boxAction,
@@ -6,7 +6,7 @@ import {
   invertBeamsAction,
   toggleRecordingAction,
   toggleReconstructingAction,
-  saveOpacityAction,
+  RadonAction,
   UPDATE_BOX,
   UPDATE_BEAM_BOX,
   SET_RAY_COUNT,
@@ -14,7 +14,10 @@ import {
   TOGGLE_RECORDING,
   TOGGLE_RECONSTRUCTING,
   SAVE_OPACITY,
+  CLEAR_OPACITIES,
 } from 'store/radon/actions';
+import {send} from 'store/radon/socket';
+import {getRow} from 'components/radon/utils';
 
 const initialBoxState = matrix([
   [0, 0, 0],
@@ -22,10 +25,17 @@ const initialBoxState = matrix([
   [0, 0, 0],
 ]);
 
+const modAngles = (m: Matrix) => {
+  const anglesIdx = index(2, [0, 1, 2]);
+  let angles = m.subset(anglesIdx).map(a => a % (2 * Math.PI));
+  m.subset(anglesIdx, angles);
+  return m;
+};
+
 const box = (state: Matrix | undefined, action: boxAction) => {
   if (state === undefined) return initialBoxState;
   return action.type === UPDATE_BOX
-    ? (add(action.payload, state) as Matrix)
+    ? (modAngles(add(action.payload, state) as Matrix) as Matrix)
     : state;
 };
 
@@ -73,22 +83,20 @@ const reconstructing = (
   return action.type === TOGGLE_RECONSTRUCTING ? !state : state;
 };
 
-const opacities = (
-  state: number[][] | undefined,
-  action: saveOpacityAction | toggleRecordingAction,
-) => {
-  // here we use * 4 b/c that's how many rotation values we want to capture
-  // if we're starting a new recording, clear any past recordings
-  if (state === undefined || action.type === TOGGLE_RECORDING) return Array(N);
+const opacities = (state: number[][] | undefined, action: RadonAction) => {
+  if (state === undefined) return Array(N);
 
-  if (action.type === SAVE_OPACITY) {
-    let out = Array.of(...state);
-    out.unshift(action.payload);
-    out.pop();
-    return out;
+  switch (action.type) {
+    case SAVE_OPACITY:
+      let out = Array.of(...state);
+      out.unshift(action.payload);
+      out.pop();
+      return out;
+    case CLEAR_OPACITIES:
+      return new Array(N);
+    default:
+      return state;
   }
-
-  return state;
 };
 
 const radon = combineReducers({
@@ -103,5 +111,16 @@ const radon = combineReducers({
   cyclesPerSec: () => 1 / 20,
 });
 
-export default radon;
 export type radonState = ReturnType<typeof radon>;
+
+export default (state: radonState | undefined, action: RadonAction) => {
+  if (state !== undefined && action.type === SAVE_OPACITY) {
+    send({
+      theta: getRow(state.box, 2)[2],
+      total: state.opacities.length,
+      sino_row: action.payload,
+    });
+  }
+
+  return radon(state, action);
+};

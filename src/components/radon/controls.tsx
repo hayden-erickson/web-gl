@@ -78,20 +78,33 @@ const Record: React.FC<RecordProps> = (props: RecordProps) => (
 
 interface ReconstructProps {
   reconstructing: boolean;
+  recording: boolean;
+  opacities: number[][];
+  toggleReconstructing: () => void;
 }
 
-const Reconstruct: React.FC<ReconstructProps> = (props: ReconstructProps) => (
-  <div
-    style={{
-      color: 'white',
-      padding: '8px',
-      fontSize: '32px',
-    }}>
-    <span style={{color: 'white'}}>Reconstruct</span>
-  </div>
-);
+const Reconstruct: React.FC<ReconstructProps> = (props: ReconstructProps) => {
+  const isOff = props.reconstructing || props.recording || !props.opacities[0];
 
-type RadonControlsProps = InvButtonProps & RayCountSliderProps & RecordProps;
+  const handleClick = isOff ? () => {} : props.toggleReconstructing;
+  return (
+    <div
+      onClick={handleClick}
+      style={{
+        color: isOff ? 'gray' : 'white',
+        cursor: isOff ? 'not-allowed' : 'pointer',
+        padding: '8px',
+        fontSize: '32px',
+      }}>
+      <span>Reconstruct</span>
+    </div>
+  );
+};
+
+type RadonControlsProps = InvButtonProps &
+  RayCountSliderProps &
+  RecordProps &
+  ReconstructProps;
 
 const RadonControls: React.FC<RadonControlsProps> = (
   props: RadonControlsProps,

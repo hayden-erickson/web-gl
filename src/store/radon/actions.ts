@@ -9,6 +9,7 @@ export const INVERT_BEAMS = 'INVERT_BEAMS';
 export const TOGGLE_RECORDING = 'TOGGLE_RECORDING';
 export const TOGGLE_RECONSTRUCTING = 'TOGGLE_RECONSTRUCTING';
 export const SAVE_OPACITY = 'SAVE_OPACITY';
+export const CLEAR_OPACITIES = 'CLEAR_OPACITIES';
 
 // action shapes
 
@@ -39,12 +40,18 @@ export interface saveOpacityAction {
   payload: number[];
 }
 
+export interface clearOpacitiesAction {
+  type: typeof CLEAR_OPACITIES;
+}
+
 export type RadonAction =
   | boxAction
   | rayAction
   | invertBeamsAction
   | toggleRecordingAction
-  | saveOpacityAction;
+  | toggleReconstructingAction
+  | saveOpacityAction
+  | clearOpacitiesAction;
 
 const boxUpdate = (t: typeof UPDATE_BOX | typeof UPDATE_BEAM_BOX) => (
   x: Matrix,
@@ -70,6 +77,14 @@ export const saveOpacity = (payload: number[]): saveOpacityAction => ({
   payload,
 });
 
+export const clearOpacities = (): clearOpacitiesAction => ({
+  type: CLEAR_OPACITIES,
+});
+
 export const toggleRecording = (): toggleRecordingAction => ({
   type: TOGGLE_RECORDING,
+});
+
+export const toggleReconstructing = (): toggleReconstructingAction => ({
+  type: TOGGLE_RECONSTRUCTING,
 });

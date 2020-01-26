@@ -72,7 +72,7 @@ interface RadonProps {
     numAngles: number;
     rotateBox: (n: number) => void;
     saveOpacity: (o: number[]) => void;
-    toggleRecording: () => void;
+    endRecording: () => void;
     theta: number;
 }
 
@@ -133,12 +133,13 @@ export default class Radon extends Component<RadonProps> {
             const doneRecording = this.nr === this.props.opacities.length
             if (this.props.recording && doneRecording) {
                 this.nr = 0
-                this.props.toggleRecording()
+                this.props.endRecording()
             }
 
 
             if( this.props.recording ) {
                 this.nr += 1
+
                 const screenData = getScreenDataUrl(this.props.beamBox, this.props.opacities, this.props.numAngles)
 
                 this.tl.load(screenData, (t: Texture) => {

@@ -1,4 +1,4 @@
-import {Matrix, index} from 'mathjs';
+import {Matrix, index, floor} from 'mathjs';
 import {
   Vector3,
   Color,
@@ -155,7 +155,7 @@ export function getBeamDataUrl(
       imgData.data[j + 3] = (j - start) / 4 >= attStart - 2 ? opacity : defVal;
     }
 
-    ops.push(opacity);
+    ops.push(floor(opacity));
   }
 
   if (opts.recording) opts.saveOpacity(ops);

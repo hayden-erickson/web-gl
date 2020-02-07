@@ -26,7 +26,6 @@ interface RayCountSliderProps {
   rayCount: number;
   maxRayCount: number;
   numRays: number;
-  reconstructing: boolean;
   setRayCount: (n: number) => void;
 }
 
@@ -76,35 +75,7 @@ const Record: React.FC<RecordProps> = (props: RecordProps) => (
   </div>
 );
 
-interface ReconstructProps {
-  reconstructing: boolean;
-  recording: boolean;
-  opacities: number[][];
-  toggleReconstructing: () => void;
-}
-
-const Reconstruct: React.FC<ReconstructProps> = (props: ReconstructProps) => {
-  const isOff = props.reconstructing || props.recording || !props.opacities[0];
-
-  const handleClick = isOff ? () => {} : props.toggleReconstructing;
-  return (
-    <div
-      onClick={handleClick}
-      style={{
-        color: isOff ? 'gray' : 'white',
-        cursor: isOff ? 'not-allowed' : 'pointer',
-        padding: '8px',
-        fontSize: '32px',
-      }}>
-      <span>Reconstruct</span>
-    </div>
-  );
-};
-
-type RadonControlsProps = InvButtonProps &
-  RayCountSliderProps &
-  RecordProps &
-  ReconstructProps;
+type RadonControlsProps = InvButtonProps & RayCountSliderProps & RecordProps;
 
 const RadonControls: React.FC<RadonControlsProps> = (
   props: RadonControlsProps,
@@ -113,7 +84,6 @@ const RadonControls: React.FC<RadonControlsProps> = (
     <RayCountSlider {...props} />
     <InvButton {...props} />
     <Record {...props} />
-    <Reconstruct {...props} />
   </div>
 );
 

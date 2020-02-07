@@ -1,18 +1,19 @@
 import {connect} from 'react-redux';
 
 import {ReduxState, ReduxAction} from 'store/reducer';
-import {toggleReconstructing} from 'store/radon/actions';
+import {setFilter} from 'store/radon/actions';
 import Inverse from 'components/radon/inverse';
 
 const mapState = (state: ReduxState) => ({
   bbox: state.beamBox,
   opacities: state.opacities,
   maxTheta: state.maxTheta,
-  reconstructing: state.reconstructing,
+  reconstruction: state.reconstruction,
+  filter: state.filter,
 });
 
 const mapDispatch = (dispatch: (action: ReduxAction) => void) => ({
-  toggleReconstructing: () => dispatch(toggleReconstructing()),
+  setFilter: (v: boolean) => dispatch(setFilter(v)),
 });
 
 export default connect(mapState, mapDispatch)(Inverse);

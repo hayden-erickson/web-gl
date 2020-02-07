@@ -6,6 +6,7 @@ import {
   RadonAction,
   saveOpacity,
   toggleRecording,
+  setDeltaV,
 } from 'store/radon/actions';
 import RadonScene from 'components/radon/scene';
 
@@ -25,6 +26,7 @@ const mapState = (state: ReduxState) => ({
   opacities: state.opacities,
   theta: state.maxTheta / state.opacities.length,
   numAngles: state.opacities.length,
+  deltaV: state.deltaV,
 });
 
 const mapDispatch = (dispatch: (action: RadonAction) => void) => ({
@@ -33,6 +35,7 @@ const mapDispatch = (dispatch: (action: RadonAction) => void) => ({
   endRecording: () => {
     dispatch(toggleRecording());
   },
+  setDeltaV: (dv: number) => dispatch(setDeltaV(dv)),
 });
 
 export default connect(mapState, mapDispatch)(RadonScene);

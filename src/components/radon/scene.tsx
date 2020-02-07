@@ -74,6 +74,8 @@ interface RadonProps {
     saveOpacity: (o: number[]) => void;
     endRecording: () => void;
     theta: number;
+    deltaV: number;
+    setDeltaV: (dv: number) => void;
 }
 
 export default class Radon extends Component<RadonProps> {
@@ -108,8 +110,8 @@ export default class Radon extends Component<RadonProps> {
 
         const rotateBox = (ms: number) => {
 
-            this.b.rotateZ(this.props.theta)
-            this.props.rotateBox(this.props.theta)
+            this.b.rotateZ(this.props.deltaV)
+            this.props.rotateBox(this.props.deltaV)
 
             const rayCount = Math.pow(2, Math.floor(this.props.numRays))
 

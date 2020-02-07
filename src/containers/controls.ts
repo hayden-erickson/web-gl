@@ -7,7 +7,6 @@ import {
   setRayCount,
   invertBeams,
   toggleRecording,
-  toggleReconstructing,
   clearOpacities,
 } from 'store/radon/actions';
 
@@ -21,7 +20,6 @@ const mapState = (state: ReduxState) => {
     recording: state.recording,
     rayCount: Math.pow(2, Math.floor(state.rays)),
     maxRayCount,
-    reconstructing: state.reconstructing,
     opacities: state.opacities,
   };
 };
@@ -34,7 +32,6 @@ const mapDispatch = (dispatch: (action: ReduxAction) => void) => ({
     dispatch(clearOpacities());
     dispatch(toggleRecording());
   },
-  toggleReconstructing: () => dispatch(toggleReconstructing()),
   invert: () => dispatch(invertBeams()),
 });
 

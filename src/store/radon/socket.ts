@@ -1,6 +1,6 @@
 import store from 'store';
 import {setReconstruction} from 'store/radon/actions';
-const conn = `ws://immense-ridge-35294.herokuapp.com/echo`;
+const conn = `wss://immense-ridge-35294.herokuapp.com/echo`;
 const ws = new WebSocket(conn);
 
 interface ImageResponse {

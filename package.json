@@ -11,7 +11,7 @@
     "@types/react-dom": "16.8.5",
     "@types/react-redux": "^7.1.2",
     "canvas": "^2.6.0",
-    "mathjs": "^6.1.0",
+    "mathjs": "^7.5.1",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-redux": "^7.1.0",
